@@ -100,10 +100,21 @@ def parse_params(params=None,
 
 
 def make_fake_coord(dim, size, unit=None):
-    args = {"values": np.arange(size)}
-    if unit is not None:
-        args["unit"] = unit
-    return sc.Variable(dims=[dim], **args)
+    # args = {"values": np.arange(size)}
+    # if unit is not None:
+    #     args["unit"] = unit
+    # return sc.Variable(dims=[dim], **args)
+    return {"dims": [dim], "shape": [size],
+            "values": np.arange(size), "variances": None,
+            "unit": unit, "dtype": "int"}
+
+
+# "dims": _dims_to_strings(v.dims),
+#             "shape": v.shape,
+#             "values": v.values,
+#             "variances": v.variances,
+#             "unit": str(v.unit),
+#             "dtype": str(v.dtype)}
 
 
 def _find_min_max(array, params):

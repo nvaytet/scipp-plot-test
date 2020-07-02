@@ -4,8 +4,8 @@
 
 # Scipp imports
 # from .._scipp import core as sc
-# from .sciplot import SciPlot
-# from .tools import make_fake_coord
+from .sciplot import SciPlot
+from .tools import make_fake_coord
 
 from .dispatch import dispatch
 from .tools import get_line_param
@@ -32,9 +32,14 @@ def plot(scipp_obj,
     # tp = scipp_obj["type"].lower()
     if "dtype" in scipp_obj:
         coords = {}
-        for dim, size in zip(scipp_obj.dims, scipp_obj.shape):
+        for dim, size in zip(scipp_obj["dims"], scipp_obj["shape"]):
             coords[dim] = make_fake_coord(dim, size)
-        inventory[str(tp)] = {"data": scipp_obj, "coords": coords}
+        data_array = {"data": scipp_obj, "coords": coords, "masks": {},
+        "attrs": {}}
+        for key in scipp_obj.keys():
+            data_array[key] = scipp_obj[key]
+        print(data_array)
+        inventory["variable"] = data_array
     elif "coords" in scipp_obj:
         inventory[scipp_obj["name"]] = scipp_obj
     else:
@@ -136,7 +141,7 @@ def plot(scipp_obj,
                 tobeplotted[key]["mpl_line_params"][n][name] = p
 
     # Plot all the subsets
-    output = {}
+    output = SciPlot()
     for key, val in tobeplotted.items():
         output[key] = dispatch(scipp_obj_dict=val["scipp_obj_dict"],
                                name=key,

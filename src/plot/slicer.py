@@ -262,7 +262,7 @@ class Slicer:
         # # Convert to Dim object?
         # if isinstance(dim, str):
         #     dim = Dim(dim)
-        print(dim, data_array["coords"])
+        # print(dim, data_array["coords"])
 
         if dim in data_array["coords"]:
 
