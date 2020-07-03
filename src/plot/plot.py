@@ -45,7 +45,7 @@ def plot(dict_obj,
         "attrs": {}}
         for key in dict_obj.keys():
             data_array[key] = dict_obj[key]
-        print(data_array)
+        # print(data_array)
         inventory["variable"] = data_array
     else:
         raise RuntimeError("plot: Input does not contain compatible entries.")
@@ -136,19 +136,19 @@ def plot(dict_obj,
 
             if key not in tobeplotted.keys():
                 tobeplotted[key] = dict(ndims=ndims,
-                                        dict_obj_dict=dict(),
+                                        data_arrays={},
                                         axes=ax,
-                                        mpl_line_params=dict())
+                                        mpl_line_params={})
                 for n in mpl_line_params.keys():
                     tobeplotted[key]["mpl_line_params"][n] = {}
-            tobeplotted[key]["dict_obj_dict"][name] = inventory[name]
+            tobeplotted[key]["data_arrays"][name] = inventory[name]
             for n, p in mpl_line_params.items():
                 tobeplotted[key]["mpl_line_params"][n][name] = p
 
     # Plot all the subsets
     output = SciPlot()
     for key, val in tobeplotted.items():
-        output[key] = dispatch(dict_obj_dict=val["dict_obj_dict"],
+        output[key] = dispatch(data_arrays=val["data_arrays"],
                                name=key,
                                ndim=val["ndims"],
                                projection=projection,
