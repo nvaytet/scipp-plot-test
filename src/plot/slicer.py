@@ -93,7 +93,7 @@ class Slicer:
             #                                array["shape"])
 
             # TODO: 2D coordinates will not be supported by this
-            self.shapes[name] = dict(zip(array["dims"], array["shape"]))
+            self.shapes[name] = dict(zip(array["data"]["dims"], array["data"]["shape"]))
             for n, c in array["coords"].items():
                 if n not in self.shapes[name] and len(c["shape"]) > 0:
                     self.shapes[name][n] = c["shape"][0]
@@ -112,7 +112,7 @@ class Slicer:
 
             # Process axes dimensions
             if axes is None:
-                axes = array["dims"]
+                axes = array["data"]["dims"]
             # Protect against duplicate entries in axes
             if len(axes) != len(set(axes)):
                 raise RuntimeError("Duplicate entry in axes: {}".format(axes))

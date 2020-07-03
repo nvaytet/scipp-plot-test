@@ -28,15 +28,14 @@ def plot(dict_obj,
     # from .dispatch import dispatch
 
     inventory = {}
-    # tp = type(dict_obj)
-    # tp = dict_obj["type"].lower()
-    if "unit" not in dict_obj:
-        # Case of a Dataset-like dict
-        inventory = dict_obj
-    elif "coords" in dict_obj:
+
+
+    if ({"coords", "data"}.issubset(set(dict_obj.keys())) or
+        {"coords", "unaligned"}.issubset(set(dict_obj.keys()))):
         # Case of a DataArray-like dict
         inventory[dict_obj["name"]] = dict_obj
-    elif "values" in dict_obj:
+    elif ({"dims", "values"}.issubset(set(dict_obj.keys())) or
+          {"dims", "shape"}.issubset(set(dict_obj.keys()))):
         # Case of a Variable-like dict
         coords = {}
         for dim, size in zip(dict_obj["dims"], dict_obj["shape"]):
@@ -48,7 +47,32 @@ def plot(dict_obj,
         # print(data_array)
         inventory["variable"] = data_array
     else:
-        raise RuntimeError("plot: Input does not contain compatible entries.")
+        # Case of a Dataset-like dict
+        inventory = dict_obj
+
+
+
+    # # tp = type(dict_obj)
+    # # tp = dict_obj["type"].lower()
+    # if "unit" not in dict_obj:
+    #     # Case of a Dataset-like dict
+    #     inventory = dict_obj
+    # elif "coords" in dict_obj:
+    #     # Case of a DataArray-like dict
+    #     inventory[dict_obj["name"]] = dict_obj
+    # elif "values" in dict_obj:
+    #     # Case of a Variable-like dict
+    #     coords = {}
+    #     for dim, size in zip(dict_obj["dims"], dict_obj["shape"]):
+    #         coords[dim] = make_fake_coord(dim, size)
+    #     data_array = {"data": dict_obj, "coords": coords, "masks": {},
+    #     "attrs": {}}
+    #     for key in dict_obj.keys():
+    #         data_array[key] = dict_obj[key]
+    #     # print(data_array)
+    #     inventory["variable"] = data_array
+    # else:
+    #     raise RuntimeError("plot: Input does not contain compatible entries.")
 
 
 
@@ -94,7 +118,7 @@ def plot(dict_obj,
         #     raise RuntimeError("The `bins` argument must be specified when "
         #                        "plotting event data.")
 
-        ndims = len(var["dims"])
+        ndims = len(var["data"]["dims"])
         # if bins is not None and sc.contains_events(var):
         #     ndims += 1
         if ndims > 0:
@@ -110,9 +134,9 @@ def plot(dict_obj,
                     else:
                         key = ".".join(axes)
                 else:
-                    key = ".".join([str(dim) for dim in var["dims"]])
+                    key = ".".join([str(dim) for dim in var["data"]["dims"]])
                 # Add unit to key
-                key = "{}.{}".format(key, str(var["unit"]))
+                key = "{}.{}".format(key, str(var["data"]["unit"]))
                 line_count += 1
             else:
                 key = name

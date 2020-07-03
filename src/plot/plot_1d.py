@@ -96,7 +96,7 @@ class Slicer1d(Slicer):
             #     self.errorbars[name] = var.unaligned["variances"] is not None
             #     self.input_contains_unaligned_data = True
             # else:
-            self.errorbars[name] = var["variances"] is not None
+            self.errorbars[name] = var["data"]["variances"] is not None
         if errorbars is not None:
             if isinstance(errorbars, bool):
                 for name, var in self.scipp_obj_dict.items():
@@ -131,14 +131,14 @@ class Slicer1d(Slicer):
         self.logy = logy
         for name, var in self.scipp_obj_dict.items():
             self.names.append(name)
-            if var["values"] is not None:
+            if var["data"]["values"] is not None:
                 self.ylim = self.get_ylim(var=var,
                                           ymin=self.ylim[0],
                                           ymax=self.ylim[1],
                                           errorbars=self.errorbars[name])
-            ylab = name_with_unit(var=var, name="")
+            ylab = name_with_unit(var=var["data"], name="")
 
-        if (not self.mpl_axes) and (var["values"] is not None):
+        if (not self.mpl_axes) and (var["data"]["values"] is not None):
             with warnings.catch_warnings():
                 warnings.filterwarnings("ignore", category=UserWarning)
                 self.ax.set_ylim(self.ylim)
@@ -178,21 +178,21 @@ class Slicer1d(Slicer):
 
     def get_ylim(self, var=None, ymin=None, ymax=None, errorbars=False):
         if errorbars:
-            err = np.sqrt(var["variances"])
+            err = np.sqrt(var["data"]["variances"])
         else:
             err = 0.0
 
         if self.logy:
             with np.errstate(divide="ignore", invalid="ignore"):
-                arr = np.log10(var["values"] - err)
+                arr = np.log10(var["data"]["values"] - err)
                 subset = np.where(np.isfinite(arr))
                 ymin_new = np.amin(arr[subset])
-                arr = np.log10(var["values"] + err)
+                arr = np.log10(var["data"]["values"] + err)
                 subset = np.where(np.isfinite(arr))
                 ymax_new = np.amax(arr[subset])
         else:
-            ymin_new = np.nanmin(var["values"] - err)
-            ymax_new = np.nanmax(var["values"] + err)
+            ymin_new = np.nanmin(var["data"]["values"] - err)
+            ymax_new = np.nanmax(var["data"]["values"] + err)
 
         dy = 0.05 * (ymax_new - ymin_new)
         ymin_new -= dy
@@ -266,7 +266,7 @@ class Slicer1d(Slicer):
             xmin = min(new_x[0], xmin)
             xmax = max(new_x[-1], xmax)
 
-            vslice = self.slice_data(var, name)
+            vslice = self.slice_data(var["data"], name)
             ydata = vslice["values"]
 
             # If this is a histogram, plot a step function
@@ -376,7 +376,7 @@ class Slicer1d(Slicer):
         if self.masks is not None:
             mslice = self.slice_masks()
         for name, var in self.scipp_obj_dict.items():
-            vslice = self.slice_data(var, name)
+            vslice = self.slice_data(var, name)["data"]
             vals = vslice["values"]
             if self.histograms[name][self.button_axis_to_dim["x"]]:
                 vals = np.concatenate((vals[0:1], vals))
