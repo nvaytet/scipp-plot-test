@@ -10,7 +10,7 @@ from .tools import make_fake_coord
 from .dispatch import dispatch
 from .tools import get_line_param
 
-def plot(scipp_obj,
+def plot(dict_obj,
          projection=None,
          axes=None,
          color=None,
@@ -27,38 +27,43 @@ def plot(scipp_obj,
     # from .tools import get_line_param
     # from .dispatch import dispatch
 
-    inventory = dict()
-    # tp = type(scipp_obj)
-    # tp = scipp_obj["type"].lower()
-    if "dtype" in scipp_obj:
+    inventory = {}
+    # tp = type(dict_obj)
+    # tp = dict_obj["type"].lower()
+    if "unit" not in dict_obj:
+        # Case of a Dataset-like dict
+        inventory = dict_obj
+    elif "coords" in dict_obj:
+        # Case of a DataArray-like dict
+        inventory[dict_obj["name"]] = dict_obj
+    elif "values" in dict_obj:
+        # Case of a Variable-like dict
         coords = {}
-        for dim, size in zip(scipp_obj["dims"], scipp_obj["shape"]):
+        for dim, size in zip(dict_obj["dims"], dict_obj["shape"]):
             coords[dim] = make_fake_coord(dim, size)
-        data_array = {"data": scipp_obj, "coords": coords, "masks": {},
+        data_array = {"data": dict_obj, "coords": coords, "masks": {},
         "attrs": {}}
-        for key in scipp_obj.keys():
-            data_array[key] = scipp_obj[key]
+        for key in dict_obj.keys():
+            data_array[key] = dict_obj[key]
         print(data_array)
         inventory["variable"] = data_array
-    elif "coords" in scipp_obj:
-        inventory[scipp_obj["name"]] = scipp_obj
     else:
-        inventory = scipp_obj
+        raise RuntimeError("plot: Input does not contain compatible entries.")
 
 
 
-    # if scipp_obj == "dataset":
-    #     for name in sorted(scipp_obj.keys()):
-    #         inventory[name] = scipp_obj[name]
+    # if dict_obj == "dataset":
+    #     for name in sorted(dict_obj.keys()):
+    #         inventory[name] = dict_obj[name]
     # elif tp is sc.Variable or tp is sc.VariableView:
     #     coords = {}
-    #     for dim, size in zip(scipp_obj.dims, scipp_obj.shape):
+    #     for dim, size in zip(dict_obj.dims, dict_obj.shape):
     #         coords[dim] = make_fake_coord(dim, size)
-    #     inventory[str(tp)] = sc.DataArray(data=scipp_obj, coords=coords)
+    #     inventory[str(tp)] = sc.DataArray(data=dict_obj, coords=coords)
     # elif tp is sc.DataArray or tp is sc.DataArrayView:
-    #     inventory[scipp_obj.name] = scipp_obj
+    #     inventory[dict_obj.name] = dict_obj
     # elif tp is dict:
-    #     inventory = scipp_obj
+    #     inventory = dict_obj
     # else:
     #     raise RuntimeError("plot: Unknown input type: {}. Allowed inputs are "
     #                        "a Dataset, a DataArray, a Variable (and their "
@@ -131,19 +136,19 @@ def plot(scipp_obj,
 
             if key not in tobeplotted.keys():
                 tobeplotted[key] = dict(ndims=ndims,
-                                        scipp_obj_dict=dict(),
+                                        dict_obj_dict=dict(),
                                         axes=ax,
                                         mpl_line_params=dict())
                 for n in mpl_line_params.keys():
                     tobeplotted[key]["mpl_line_params"][n] = {}
-            tobeplotted[key]["scipp_obj_dict"][name] = inventory[name]
+            tobeplotted[key]["dict_obj_dict"][name] = inventory[name]
             for n, p in mpl_line_params.items():
                 tobeplotted[key]["mpl_line_params"][n][name] = p
 
     # Plot all the subsets
     output = SciPlot()
     for key, val in tobeplotted.items():
-        output[key] = dispatch(scipp_obj_dict=val["scipp_obj_dict"],
+        output[key] = dispatch(dict_obj_dict=val["dict_obj_dict"],
                                name=key,
                                ndim=val["ndims"],
                                projection=projection,

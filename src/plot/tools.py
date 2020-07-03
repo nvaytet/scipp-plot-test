@@ -106,7 +106,7 @@ def make_fake_coord(dim, size, unit=None):
     # return sc.Variable(dims=[dim], **args)
     return {"dims": [dim], "shape": [size],
             "values": np.arange(size), "variances": None,
-            "unit": unit, "dtype": "int"}
+            "unit": unit, "dtype": np.int}
 
 
 # "dims": _dims_to_strings(v.dims),
